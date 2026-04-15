@@ -173,6 +173,21 @@ class Curling:
             score += stone.color
         return score
 
+    def get_state(self) -> dict:
+        """get the current state space
+
+        Returns:
+            dict: dictionary containing 'stones' as list of (x, y, color) tuples and 'run_number' as int
+        """
+        stones = [(stone.position[0], stone.position[1], stone.color) for stone in self.stones]
+        run_number = len(self.stones)
+        return {
+            "stones": stones,
+            "run_number": run_number
+        }
+    def print_state(state):
+        return
+
 class Canvas:
     """canvas for rendering the curling game"""
     WINDOW_NAME = "Curling"
