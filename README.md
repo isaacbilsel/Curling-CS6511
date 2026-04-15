@@ -7,6 +7,17 @@ The game of curling involves a combination of strategy and technique. Finding an
 ## State Space: 
 The state space is the locations of the agent's and opponent's team's stones on a 2D grid. We represent this as a dictionary containing 'stones' as list of (x, y, color) tuples and 'run_number' as int. See the get_state() function in curling.py. 
 
+A full representation of space observation could be: 
+observation =
+[
+  stone_to_play_in_this_round,
+  one_hot_encoding of round number: [0, 0, 0..., 1, ..., 0, 0, 0] // or just a int 'run_number',
+  (red1_x, red1_y), (red2_x, red2_y), ... (red8_x, red8_y),  // Unfinished ones are (0,0)
+  (yellow_1_x, yellow_1_y), ...(yellow_8_x, yellow_8_y),  // Unfinished ones are (0,0)
+  red_mask_1, ..., red_mask_8,   //  like 1,1,1,1,0,0,0,0
+  yellow_mask_1, ..., yellow_mask_8   //  like 1,1,1,0,0,0,0,0
+]
+
 ## Action Space
 The action space is the throw parameters: angle, velocity, spin, each of which are real numbers. Each above variable has an uncertainty/throw error e. 
 
