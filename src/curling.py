@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
-import cv2
+try:
+    import cv2
+except ModuleNotFoundError:  # pragma: no cover - exercised only in headless environments
+    cv2 = None
 
 from typing import ClassVar, List, Optional, Tuple
 from dataclasses import dataclass
@@ -9,6 +12,11 @@ from dataclasses import dataclass
 from .constants import Accuracy, PhysicalConstants, SimulationConstants
 from .enums import Colors, DisplayTime, StoneColor, SimulationState
 from .stone import Stone
+
+
+def _require_cv2():
+    if cv2 is None:
+        raise RuntimeError("OpenCV is required for rendering and display. Install the 'display' extra to enable it.")
 
 class Curling:
     physical_constants: PhysicalConstants = PhysicalConstants()
@@ -39,7 +47,9 @@ class Curling:
             starting_color (Optional[StoneColor], optional): color of starting player (or none for random). Defaults to None.
         """
         self.stones: List[Stone] = []
-        self.next_stone_color = starting_color or np.random.choice([StoneColor.RED, StoneColor.YELLOW])
+        if starting_color is None:
+            starting_color = StoneColor(np.random.choice([StoneColor.RED, StoneColor.YELLOW]))
+        self.next_stone_color = StoneColor(starting_color)
 
     def step(self, simulation_constants: SimulationConstants = SimulationConstants()) -> SimulationState:
         """step the simulation one timestep (simulation_constants.dt)
@@ -201,17 +211,20 @@ class Canvas:
 
     def draw_target(self, radii: List[float], offset: float):
         """draw the target on the canvas"""
+        _require_cv2()
         TARGET_colorS = (Colors.RED, Colors.WHITE, Colors.BLUE, Colors.WHITE)
         for color, radius in zip(TARGET_colorS, reversed(sorted((radii)))):
             cv2.circle(self._canvas, center=self.adjust_coordinates((0, offset)), radius=self.convert_radius(radius), color=color.value, thickness=-1)
 
     def draw_horizontal_lines(self, lines: List[float]):
         """draw horizontal lines on the canvas"""
+        _require_cv2()
         for height in lines:
             cv2.line(self._canvas, self.adjust_coordinates((-self.pitch_width, -height)), self.adjust_coordinates((self.pitch_width, -height)), color=Colors.WHITE.value, thickness=1)
 
     def draw_vertical_lines(self, lines: List[float]):
         """draw vertical lines on the canvas"""
+        _require_cv2()
         for width in lines:
             cv2.line(self._canvas, self.adjust_coordinates((width, 0)), self.adjust_coordinates((width, -self.pitch_length)), color=Colors.WHITE.value, thickness=1)
 
@@ -221,6 +234,7 @@ class Canvas:
 
     def draw_stone(self, stone: Stone):
         """draw a stone on the canvas"""
+        _require_cv2()
         stone_color = Colors.RED if stone.color == StoneColor.RED else Colors.YELLOW
         # band of color
         cv2.circle(self._canvas, center=self.adjust_coordinates(stone.position), radius=self.convert_radius(stone.outer_radius), color=stone_color.value, thickness=-1)
@@ -240,6 +254,7 @@ class Canvas:
         Args:
             constants (SimulationConstants, optional): simulation constants to determine speed of animation. Defaults to SimulationConstants().
         """
+        _require_cv2()
         cv2.imshow(self.WINDOW_NAME, self._canvas)
         linear_transform = self.DISPLAY_TIME.value
         cv2.waitKey(int(linear_transform(1000 * constants.dt)))

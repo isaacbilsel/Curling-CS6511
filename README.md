@@ -4,14 +4,16 @@ Simulated curling environment
 Physics based on [Dynamics and curl ratio of a curling stone](https://rdcu.be/dgIW2)  
 Used in [https://github.com/George-Ogden/betacurl](https://github.com/George-Ogden/betacurl)
 ## Install
-With pip
+From source
 ```sh
-pip install git+https://github.com/George-Ogden/curling.git
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -e .
 ```
-from source
+Install the rendering dependency if you want OpenCV windows:
 ```sh
-git clone https://github.com/George-Ogden/curling
-pip install .
+python -m pip install -e ".[display]"
 ```
 ## Usage
 ```python

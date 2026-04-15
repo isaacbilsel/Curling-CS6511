@@ -1,7 +1,9 @@
 import numpy as np
-import cv2
 
 from pytest import mark
+import pytest
+
+cv2 = pytest.importorskip("cv2")
 
 from curling import Curling, SimulationConstants, StoneColor, StoneThrow
 from curling.enums import Colors, DisplayTime, LinearTransform

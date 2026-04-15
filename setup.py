@@ -1,14 +1,8 @@
-from setuptools import setup, Extension
-from Cython.Build import cythonize
+from setuptools import setup
 
-extensions = [
-    Extension("curling.stone", ["src/stone.pyx"])
-]
 
 setup(
-    ext_modules=cythonize(extensions),
+    packages=["curling"],
+    package_dir={"curling": "src"},
     zip_safe=False,
-    package_dir={
-        "curling": "src",
-    }
 )

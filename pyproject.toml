@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel", "Cython"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,9 +9,14 @@ authors = [
     {name = "George Ogden", email = "george@goprogram.co.uk"},
 ]
 description = "Interface for curling physics simulation"
-dependencies = ["numpy", "opencv-python"]
+dependencies = ["numpy"]
+
+[project.scripts]
+curling-play = "curling.cli:main"
+curling-ui = "curling.tk_app:main"
 
 [project.optional-dependencies]
+display = ["opencv-python"]
 test = ["pytest>=6.2", "pytest-timeout>=1.5"]
 docs = ["mkdocs==1.4.3", "mkdocs-material==7.3.3", "mkdocstrings==0.18.0", "mkdocs-git-revision-date-plugin", "mkdocs-mermaid2-plugin==0.6.0", "mkdocs-include-markdown-plugin==2.0.0"]
 
