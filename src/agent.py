@@ -43,7 +43,7 @@ for i in range(4):
     )
 
     state = get_state(curling)
-    states.append(state, i)
+    states.append(state)
 
 score = curling.evaluate_position()
 print(score)
