@@ -34,7 +34,7 @@ A simple heuristic and random agent have been implemented to understand and test
 
 
 Run to test:
-`python3 -m 
+`python3 -m agent.simpleAgents
 
 ## Original Repo:
 
