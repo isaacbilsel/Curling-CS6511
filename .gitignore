@@ -46,3 +46,6 @@ docs/index.md
 
 # Pytest Cache
 .pytest_cache/
+
+
+.venv/
