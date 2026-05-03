@@ -48,3 +48,5 @@ docs/index.md
 .pytest_cache/
 
 .venv/
+.gitignore
+notebooks

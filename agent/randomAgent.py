@@ -1,13 +1,13 @@
-from .curling import Curling, SimulationConstants, StoneColor, StoneThrow
+from src.curling import Curling, SimulationConstants, StoneColor, StoneThrow
 import numpy as np
 
 accurate_constants = SimulationConstants(time_intervals=.05)
 
-def get_state(curling):
-    stone_states = []
-    for i in curling.stones:
-        stone_states.append((i.position, i.color))
-    return stone_states
+# def get_state(curling):
+#     stone_states = []
+#     for i in curling.stones:
+#         stone_states.append((i.position, i.color))
+#     return stone_states
 
 def max_agent(curling):
     return StoneThrow(
@@ -42,7 +42,7 @@ for i in range(4):
         constants=accurate_constants
     )
 
-    state = get_state(curling)
+    state = curling.get_state()
     states.append(state)
 
 score = curling.evaluate_position()

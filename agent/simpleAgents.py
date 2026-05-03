@@ -1,7 +1,7 @@
 # Create a heuristic agent and test against a random agent
 # Red = heueristic agent, yellow = random agent
 
-from curling import Curling, SimulationConstants, StoneColor, StoneThrow
+from src.curling import Curling, SimulationConstants, StoneColor, StoneThrow
 import numpy as np
 
 accurate_constants = SimulationConstants(time_intervals=.2)
