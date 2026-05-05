@@ -1,6 +1,6 @@
 # Create a heuristic agent and test against a random agent
 # Red = heueristic agent, yellow = random agent
-
+from __future__ import annotations
 from src.curling import Curling, SimulationConstants, StoneColor, StoneThrow
 import numpy as np
 
