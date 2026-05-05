@@ -40,6 +40,7 @@ class Curling:
         """
         self.stones: List[Stone] = []
         self.next_stone_color = starting_color or np.random.choice([StoneColor.RED, StoneColor.YELLOW])
+        self.throw_count = 0
 
     def step(self, simulation_constants: SimulationConstants = SimulationConstants()) -> SimulationState:
         """step the simulation one timestep (simulation_constants.dt)
@@ -139,6 +140,7 @@ class Curling:
         assert stone_throw.color == self.next_stone_color, f"It is {self.next_stone_color.name}'s turn, not {stone_throw.color.name}'s turn"
         # change the next stone color
         self.next_stone_color = ~self.next_stone_color
+        self.throw_count += 1
         # add a new moving stone to the game
         self.stones.append(
             self.create_stone(
@@ -183,7 +185,7 @@ class Curling:
         run_number = len(self.stones)
         return {
             "stones": stones,
-            "run_number": run_number
+            "run_number": self.throw_count
         }
     def print_state(state):
         return
