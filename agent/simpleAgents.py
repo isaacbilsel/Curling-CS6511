@@ -38,13 +38,13 @@ def randomAgent(color):
         constants=accurate_constants # leave blank for the best trade off between speed and accuracy
     )
 
-for i in range(curling.num_stones_per_end):
-    current_player = curling.next_stone_color
-    if current_player == StoneColor.RED:
-        heuristicAgent(current_player)
-    else: 
-        randomAgent(current_player)
+if __name__ == "__main__":
+    for i in range(curling.num_stones_per_end):
+        current_player = curling.next_stone_color
+        if current_player == StoneColor.RED:
+            heuristicAgent(current_player)
+        else: 
+            randomAgent(current_player)
 
-print("State: \n", curling.get_state())
-
-print("\nFinal Score: ", curling.evaluate_position()) # positive for YELLOW and negative for RED
+    print("State: \n", curling.get_state())
+    print("\nFinal Score: ", curling.evaluate_position())

@@ -30,6 +30,7 @@ class MCTS_Tree_Config:
         self.children_number = children_number
         self.action_per_dimension = action_per_dimension
         self.accurate_constants = SimulationConstants(time_intervals=0.2, num_points_on_circle=10)
+        self.fast_constants = SimulationConstants(time_intervals=1.0, num_points_on_circle=4)  # lower precision for rollout
         self.randomseed = random_seed
         self.C = exploration_weight
 
@@ -174,7 +175,7 @@ class MCTS_Agent:
                 throw_action = self.build_no_grid_actions()
             else:
                 throw_action = self.random_seed.choice(self.grid_actions)
-            execute_a_throw(current_game, throw_action, self.config.accurate_constants)
+            execute_a_throw(current_game, throw_action, self.config.fast_constants)
             throw_number += 1
         return calculate_score(current_game, color)
 
@@ -244,6 +245,7 @@ def calculate_score(curling:Curling, player_color:str):
 
 def play_a_turn(mcts_agent:MCTS_Agent, curling:Curling):
     throw = mcts_agent.search(curling)
+    print(throw)
     curling.throw(throw, mcts_agent.config.accurate_constants, display = False)
     return curling
 
@@ -254,42 +256,59 @@ def play_a_turn(mcts_agent:MCTS_Agent, curling:Curling):
 def play_a_game_with_MCTS(mcts_agent:MCTS_Agent):
     curling = Curling(StoneColor.RED)
     curling.reset(starting_color=StoneColor.RED)
-    for _ in range(curling.num_stones_per_end):
+    for i in range(curling.num_stones_per_end):
         if is_the_last_round(curling):     # ← 关键：每轮前先检查
             break
+        print("The number of stones throw is", i+1)
         curling = play_a_turn(mcts_agent, curling)
+        print(curling.get_state())
     return curling
   
-from agent.simpleAgents import heuristicAgent, randomAgent
+accurate_constants = SimulationConstants(time_intervals=0.2, num_points_on_circle=10)
 
 # Heuristic Agent vs MCTS Agent
-def play_a_game_heuristic(heuristic_agent, mcts_agent:MCTS_Agent):
+def play_a_game_vs_heuristic(mcts_agent:MCTS_Agent):
     curling = Curling(StoneColor.RED)
-    #curling.reset(starting_color=StoneColor.RED)
-    for _ in range(curling.num_stones_per_end):
+    for i in range(curling.num_stones_per_end):
+        if is_the_last_round(curling):
+            break
         if curling.next_stone_color == StoneColor.RED:
+            print("The number of stones throw is", i+1)
             curling = play_a_turn(mcts_agent, curling)
+            print(curling.get_state())
         else:
-            heuristic_agent(StoneColor.YELLOW)
+            # Heuristic: throw towards center with minimal angle/spin
+            curling.throw(
+                StoneThrow(color=StoneColor.YELLOW, sqrt_velocity=1.41, angle=np.random.uniform(-0.01, 0.01), spin=np.random.uniform(-0.1, 0.1)),
+                constants=accurate_constants, display=False,
+            )
     return curling
 
 # Random Agent vs MCTS Agent
-def play_a_game_random(random_agent, mcts_agent:MCTS_Agent):
+def play_a_game_vs_random(mcts_agent:MCTS_Agent):
     curling = Curling(StoneColor.RED)
-    #curling.reset(starting_color=StoneColor.RED)
-    for _ in range(curling.num_stones_per_end):
+    for i in range(curling.num_stones_per_end):
+        if is_the_last_round(curling):
+            break
         if curling.next_stone_color == StoneColor.RED:
+            print("The number of stones throw is", i+1)
             curling = play_a_turn(mcts_agent, curling)
+            print(curling.get_state())
         else:
-            random_agent(StoneColor.YELLOW)
+            # Random: throw with random parameters
+            curling.throw(
+                StoneThrow(color=StoneColor.YELLOW, sqrt_velocity=np.random.uniform(1.35, 1.46), angle=np.random.uniform(-0.06, 0.05), spin=np.random.uniform(-2.0, 2.0),),
+                constants=accurate_constants,
+                display=False,
+            )
     return curling
 
 mctsagent = MCTS_Agent(
     MCTS_Tree_Config(
-        iterations=100,
-        children_number=24,
+        iterations=200,
+        children_number=36,
         random_seed=5
     )
 )
-curling = play_a_game_heuristic(heuristicAgent, mctsagent)
+curling = play_a_game_vs_heuristic(mctsagent)
 print("Final Score: ", curling.evaluate_position())
