@@ -1,6 +1,6 @@
 from __future__ import annotations
 from src.curling import Curling, SimulationConstants, Stone, StoneColor, StoneThrow
-
+#from numba import jit
 import numpy as np
 import math
 import random
@@ -141,9 +141,9 @@ class MCTS_Agent:
         return actions 
             
     def build_no_grid_actions(self):
-        if self.random_seed.random() <= 0.33:
+        if self.random_seed.random() <= 0.5:
             "sample round the center"
-            Action = (self.random_seed.gauss(1.41, 0.03),self.random_seed.gauss(0.0, 0.04),self.random_seed.gauss(0.0, 0.03))
+            Action = (self.random_seed.gauss(1.41, 0.02),self.random_seed.gauss(0.0, 0.01),self.random_seed.gauss(0.0, 0.04))
             limit = StoneThrow.bounds
             return (float(max(limit[0][0], min(limit[0][1], Action[0]))),
                     float(max(limit[1][0], min(limit[1][1], Action[1]))),
@@ -257,7 +257,7 @@ def play_a_game_with_MCTS(mcts_agent:MCTS_Agent):
     curling = Curling(StoneColor.RED)
     curling.reset(starting_color=StoneColor.RED)
     for i in range(curling.num_stones_per_end):
-        if is_the_last_round(curling):     # ← 关键：每轮前先检查
+        if is_the_last_round(curling):    
             break
         print("The number of stones throw is", i+1)
         curling = play_a_turn(mcts_agent, curling)
@@ -305,7 +305,7 @@ def play_a_game_vs_random(mcts_agent:MCTS_Agent):
 
 mctsagent = MCTS_Agent(
     MCTS_Tree_Config(
-        iterations=200,
+        iterations=210,
         children_number=36,
         random_seed=5
     )
