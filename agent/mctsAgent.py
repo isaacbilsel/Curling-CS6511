@@ -1,31 +1,27 @@
-import sys
-import os
 import numpy as np
 from copy import deepcopy
 import math
 import random
 from src.curling import Curling, SimulationConstants, StoneColor, StoneThrow
+import pandas as pd
 
 accurate_constants = SimulationConstants(time_intervals=.2)
 
 def check_winner_state(state, color):
     score = state.evaluate_position()
-    if color == StoneColor.YELLOW:
-        return 1 if score > 0 else 0
-    else:
-        return 1 if score < 0 else 0
+    return (score+8)/16
 
 def available_actions():
     return [(sqrt_velocity, angle, spin)
-        for sqrt_velocity in [1.35, 1.38, 1.40, 1.42]
-        for angle in [-0.03, 0, 0.03]
+        for sqrt_velocity in [1.38, 1.39, 1.40, 1.41, 1.42]
+        for angle in [-0.02, 0, 0.02]
         for spin in [1, 0, -1]
         ] 
 
 def random_actions():
-    return (np.random.uniform(1.35, 1.46),
-            np.random.uniform(-.06, .05),
-            np.random.uniform(2., -2.))
+    return (np.random.normal(1.40, 0.02),
+            np.random.normal(0, 0.02),
+            np.random.normal(0, 0.5))
 
 class MCTSNode:
     def __init__(self, state, parent=None, action=None, player=None):
@@ -69,13 +65,27 @@ class MCTSNode:
 
         while state.get_state()['run_number'] < 16:
             player = state.next_stone_color
-            move = random.choice(available_actions())
-            state.throw(StoneThrow(
+            if player == my_color:
+                move = random.choice(available_actions())
+                actions = StoneThrow(
                     color=player,
                     sqrt_velocity=move[0],
                     angle=move[1],
-                    spin=move[2],
-                ))
+                    spin=move[2]
+                    )
+            else:
+                move = random_actions()
+                actions = StoneThrow(
+                    color=player,
+                    sqrt_velocity=move[0],
+                    angle=move[1],
+                    spin=move[2]
+                    )
+
+            state.throw(actions,
+                        display=False,
+                        constants=accurate_constants
+                        )
         return check_winner_state(state, my_color)
     
     def backpropagate(self, result):
@@ -83,7 +93,7 @@ class MCTSNode:
         self.wins += result
         if self.parent:
             self.parent.backpropagate(1-result)
-    
+
     def best_child(self, c=1.4):
         def ucb(child):
             if child.visits == 0:
@@ -113,18 +123,17 @@ def mcts_search(root_state, iterations=500):
 
 def throw_error(action):
     sqrt_velocity, angle, spin = action
-    return (np.clip(sqrt_velocity + np.random.normal(0, 0.03), 1.33, 1.46),
-    np.clip(angle + np.random.normal(0, 0.04), -0.03, 0.03),
-    np.clip(spin + np.random.normal(0, 1), -3, 3))
+    return (np.clip(sqrt_velocity + np.random.normal(0, 0.03), 1.36, 1.46),
+    np.clip(angle + np.random.normal(0, 0.01), -0.1, 0.1),
+    np.clip(spin + np.random.normal(0, 0.5), -4, 4))
 
 def play():
     my_color = StoneColor.YELLOW
     curling = Curling(my_color)
     curling.reset(starting_color=my_color)
-    states = []
+    log = []
 
     for i in range(curling.num_stones_per_end):
-    # for i in range(2):
         current_player = curling.next_stone_color
         if current_player == StoneColor.YELLOW:
             move = mcts_search(deepcopy(curling), iterations=500)
@@ -146,18 +155,54 @@ def play():
                 )
 
         curling.throw(actions,
-            display=False,
-            constants=accurate_constants
-        )
-        print(f"Move: {move}, Errored: {move_error}, Turn: {i}, Player: {current_player}, State: {curling.get_state()}")
+                      display=False,
+                      constants=accurate_constants
+                      )
+        
+        latest = curling.stones[-1] if curling.stones else None
+        x = float(latest.position[0]) if latest else None
+        y = float(latest.position[1]) if latest else None
+
+        log.append({
+            'turn': i,
+            'player': current_player,
+            'actual': move,
+            'errored': move_error,
+            'x': x,
+            'y': y
+        })
+        print(f'Turn: {i+1}')
     
     score = curling.evaluate_position()
-    if score < 0:
-        print('RED WINS')
-    elif score > 0:
-        print('YELLOW WINS')
-    else:
-        print('DRAW')
+    winner = 'YELLOW' if score > 0 else 'RED' if score < 0 else 'DRAW'
+    return log, score, winner
+
+def loop(n=10):
+    alllogs = []
+    wins, losses, draws = 0, 0, 0
+    for i in range(n):
+        print(f'Game: {i+1}')
+        log, score, winner = play()
+        for j in log:
+            j['game'] = i + 1
+            j['winner'] = winner
+            j['final_score'] = score
+        alllogs.extend(log)
+
+        if score > 0:
+            wins += 1
+        elif score < 0:
+            losses += 1
+        else:
+            draws += 1
+
+        print(f'Game: {i+1}, Score: {score}, Wins: {wins}, Losses: {losses}, Draws: {draws}')
+        
+    df = pd.DataFrame(alllogs)
+    df.to_csv('results.csv', index=False)
+
+    print(f'Wins: {wins/n*100:.1f}%')
+    print('DONE')
 
 if __name__ == "__main__":
-    play()
+    loop(n=5)
