@@ -6,14 +6,14 @@ import math
 import random
 from src.curling import Curling, SimulationConstants, StoneColor, StoneThrow
 
-accurate_constants = SimulationConstants(time_intervals=.05)
+accurate_constants = SimulationConstants(time_intervals=.2)
 
 def check_winner_state(state, color):
     score = state.evaluate_position()
     if color == StoneColor.YELLOW:
-        return 1 if score < 0 else 0
-    else:
         return 1 if score > 0 else 0
+    else:
+        return 1 if score < 0 else 0
 
 def available_actions():
     return [(sqrt_velocity, angle, spin)
@@ -25,7 +25,7 @@ def available_actions():
 def random_actions():
     return (np.random.uniform(1.35, 1.46),
             np.random.uniform(-.06, .05),
-            np.random.uniform(2., -2.),)
+            np.random.uniform(2., -2.))
 
 class MCTSNode:
     def __init__(self, state, parent=None, action=None, player=None):
@@ -111,6 +111,12 @@ def mcts_search(root_state, iterations=500):
     best = max(root.children, key=lambda c: c.visits)
     return best.action
 
+def throw_error(action):
+    sqrt_velocity, angle, spin = action
+    return (np.clip(sqrt_velocity + np.random.normal(0, 0.03), 1.33, 1.46),
+    np.clip(angle + np.random.normal(0, 0.04), -0.03, 0.03),
+    np.clip(spin + np.random.normal(0, 1), -3, 3))
+
 def play():
     my_color = StoneColor.YELLOW
     curling = Curling(my_color)
@@ -121,27 +127,29 @@ def play():
     # for i in range(2):
         current_player = curling.next_stone_color
         if current_player == StoneColor.YELLOW:
-            move = mcts_search(deepcopy(curling), iterations=100)
+            move = mcts_search(deepcopy(curling), iterations=500)
+            move_error = throw_error(move)
             actions = StoneThrow(
                 color=current_player,
-                sqrt_velocity=move[0],
-                angle=move[1],
-                spin=move[2]
+                sqrt_velocity=move_error[0],
+                angle=move_error[1],
+                spin=move_error[2]
                 )
         else:
             move = random_actions()
+            move_error = throw_error(move)
             actions = StoneThrow(
                 color=current_player,
-                sqrt_velocity=move[0],
-                angle=move[1],
-                spin=move[2]
+                sqrt_velocity=move_error[0],
+                angle=move_error[1],
+                spin=move_error[2]
                 )
 
         curling.throw(actions,
             display=False,
             constants=accurate_constants
         )
-        print(f"Move: {move}, Turn: {i}, Player: {current_player}, State: {curling.get_state()}")
+        print(f"Move: {move}, Errored: {move_error}, Turn: {i}, Player: {current_player}, State: {curling.get_state()}")
     
     score = curling.evaluate_position()
     if score < 0:
