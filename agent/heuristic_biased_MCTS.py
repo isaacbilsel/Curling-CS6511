@@ -277,7 +277,7 @@ def play_a_game_vs_heuristic(mcts_agent:MCTS_Agent):
             curling = play_a_turn(mcts_agent, curling)
             print(curling.get_state())
         else:
-            # Heuristic: throw towards center with minimal angle/spin
+            # Heuristic:--- throw towards center with minimal angle/spin
             curling.throw(
                 StoneThrow(color=StoneColor.YELLOW, sqrt_velocity=1.41, angle=np.random.uniform(-0.01, 0.01), spin=np.random.uniform(-0.1, 0.1)),
                 constants=accurate_constants, display=False,
@@ -295,7 +295,7 @@ def play_a_game_vs_random(mcts_agent:MCTS_Agent):
             curling = play_a_turn(mcts_agent, curling)
             print(curling.get_state())
         else:
-            # Random: throw with random parameters
+            # Random--- throw with random parameters
             curling.throw(
                 StoneThrow(color=StoneColor.YELLOW, sqrt_velocity=np.random.uniform(1.35, 1.46), angle=np.random.uniform(-0.06, 0.05), spin=np.random.uniform(-2.0, 2.0),),
                 constants=accurate_constants,
