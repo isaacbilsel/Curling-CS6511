@@ -72,20 +72,6 @@ The heuristic is used during rollout to simulate how both players would play. In
 
 These three cases cover the most common situations in curling. The heuristic is not perfect but gives the rollout enough realism to produce useful signal for the MCTS search.
 
-### Algorithm
-
-We use MCTS with UCT selection. The UCT formula balances exploitation (picking throws that scored well) and exploration (trying throws we haven't seen much):
-
-$$UCT_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}}$$
-
-where $\bar{X}_i$ is the average score of child node $i$, $n_i$ is how many times it was visited, $N$ is how many times the parent was visited, and $C = 1.4$ is the exploration constant.
-
-Each MCTS iteration has four steps:
-1. **Selection** — walk down the tree picking the child with the highest UCT score until reaching an unexplored node
-2. **Expansion** — try one new candidate throw and add it as a child node
-3. **Rollout** — simulate 4 turns ahead using the heuristic for both players, get a score
-4. **Backpropagation** — send the score back up to every node on the path
-
 ### How to run
 
 ```
