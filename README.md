@@ -43,7 +43,7 @@ We utilize two strategies to choose actions during the selection step:
 It should be noted that:
 When there is no need to expand for a node and thus we are searching for the best child, two situations are considered in the function `choose_the_best_action`
 1. When the next player is the root player, maximize the UCT, that is $$UCT_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}}$$
-2. When the next player is an island, in order to create trouble for the rootplayer, the UCT is minimized, that is $$UCT_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}}$$
+2. When the next player is an island, in order to create trouble for the rootplayer, the UCT is minimized, that is $$UCT_i = \bar{X}_i - C \sqrt{\frac{\ln N}{n_i}}$$
 
 ## Testing
 We test our agent agains a random agent, which chooses legal actions uniform randomly, and a heuristic agent, which always throws the stone exactly into the center ring. These agents are implemented in agent/simpleAgents.py. 
