@@ -28,6 +28,7 @@ State = {
 ## Action Space
 
 The action space is the throw parameters: angle, velocity, spin, each of which are real numbers. Each above variable has an uncertainty/throw error e.
+
 ## Agent
 
 We use a Monte Carlo Tree Search (MCTS) to determine the optimal action based on the game state. See agent/heuristic_biased_MCTS.py. The agent searches over throw parameters `(sqrt_velocity, angle, spin)` and returns a `StoneThrow` for the current player. Each MCTS iteration runs: Selection, Expansion, Rollout, and Backpropagation. Selection uses the standard upper confidence bound tree (UCT) formula:
@@ -41,13 +42,72 @@ We utilize two strategies to choose actions during the selection step:
 2. No-grid Mode: Discretize the continuous action space into a fixed grid and sample & search within the grid actions.
 
 
-## Testing
-We test our agent agains a random agent, which chooses legal actions uniform randomly, and a heuristic agent, which always throws the stone exactly into the center ring. These agents are implemented in agent/simpleAgents.py. 
+## Our Solution
+
+Our agent is implemented in `agent/mctsHeuristicRollout.py`. It plays as RED and uses Monte Carlo Tree Search (MCTS) to decide what throw to make each turn.
+
+The idea: before throwing, the agent simulates many possible futures and picks the throw that tends to lead to the best outcome.
+
+### What the agent does each turn
+
+1. It samples 20 possible throws to try. The throws consists of, draw shots aimed near the center (50%), knockout shots at higher velocity to knock out opponent stones (25%), and the rest are random to keep things exploratory.
+
+2. For each candidate throw, it builds the search tree. It tries throws, evaluates the throw, and branches from there.
+
+3. The search tree simulates for 4 turns ahead instead of entire game (sweet spot for accuracy and speed) based on our defined heuristics.
+
+4. The score from that simulation gets sent back up the tree so good throws get visited more often.
+
+5. After 50 iterations of this process, it picks the throw that was visited the most which is the one the search found most consistently good.
+
+### Heuristic
+
+The heuristic is used during rollout to simulate how both players would play. Instead of throwing randomly, each simulated throw follows these three rules based on the current board state:
+
+1. **House is empty** — throw straight toward the center of the house with no spin. 
+
+2. **Opponent's stone is closest to the button** — throw a knockout shot at higher velocity aimed slightly at the opponent's stone. The angle is adjusted left or right depending on which side of the sheet their stone is on.
+
+3. **Our stone is closest to the button** — throw a guard shot at lower velocity with a small angle and spin to curl in front of our stone.
+
+These three cases cover the most common situations in curling. The heuristic is not perfect but gives the rollout enough realism to produce useful signal for the MCTS search.
+
+### Algorithm
+
+We use MCTS with UCT selection. The UCT formula balances exploitation (picking throws that scored well) and exploration (trying throws we haven't seen much):
+
+$$UCT_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}}$$
+
+where $\bar{X}_i$ is the average score of child node $i$, $n_i$ is how many times it was visited, $N$ is how many times the parent was visited, and $C = 1.4$ is the exploration constant.
+
+Each MCTS iteration has four steps:
+1. **Selection** — walk down the tree picking the child with the highest UCT score until reaching an unexplored node
+2. **Expansion** — try one new candidate throw and add it as a child node
+3. **Rollout** — simulate 4 turns ahead using the heuristic for both players, get a score
+4. **Backpropagation** — send the score back up to every node on the path
+
+### How to run
+
+```
+python3 -m agent.mctsHeuristicRollout
+```
+
+To run the full experiment (50 games vs random, 50 games vs heuristic):
+
+```
+python3 -m agent.run_experiments
+```
 
 ## Results
 
-Run to test:
-`python3 -m agent.simpleAgents`
+We ran 50 games against each opponent. Our agent plays as RED.
+
+| Opponent | RED (our MCTS) | YELLOW (opponent) | Draws |
+|---|---|---|---|
+| Random agent | 44/50 (88%) | 6/50 | 0 |
+| Heuristic agent | 41/50 (82%) | 9/50 | 0 |
+
+The agent beats the random opponent 88% of the time and the heuristic opponent 82% of the time. The heuristic opponent is harder to beat because it also plays smart reactive shots, but MCTS still wins most games because it looks 4 turns ahead while the heuristic only reacts to the current board.
 
 ## Original Repo:
 
