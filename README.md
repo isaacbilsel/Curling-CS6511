@@ -113,9 +113,12 @@ d. The below ICML paper from 2018 uses a deep CNN and a monte-carlo search tree 
 e. The below work (2025) uses an actor-critic algorithm to assess curling strategy. (https://www.research-collection.ethz.ch/server/api/core/bitstreams/59f77456-9ead-4381-a745-936402e7bdc7/content)  
 
 #### Software and Hardware requirements
-- Python3
-- numpy, pandas, opencv
-- Any standard laptop is enough
+
+- Python 3.10 or higher
+- Install dependencies with:
+```
+pip install -r requirements.txt
+```
 
 #### References used:
 Simulator: https://github.com/George-Ogden/curling
