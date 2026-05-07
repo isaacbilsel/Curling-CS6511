@@ -83,15 +83,23 @@ These three cases cover the most common situations in curling. The heuristic is 
 
 ### How to run
 
+Clone the repository
+```
+git clone git@github.com:isaacbilsel/Curling-CS6511.git
+```    
+Install Dependencies 
+```
+pip install -r requirements.txt
+```  
+To run a single game 
 ```
 python3 -m agent.mctsHeuristicRollout
-```
-
+```  
 To run the full experiment (50 games vs random, 50 games vs heuristic):
-
 ```
 python3 -m agent.run_experiments
-```
+```  
+Note: You are playing as red, so the scoring will be in negative. If the score is less than zero, you are winning. While running you can see the score after every turn.  
 
 ## Results
 
@@ -121,7 +129,8 @@ pip install -r requirements.txt
 
 #### References used:
 Simulator: https://github.com/George-Ogden/curling
-MCTS: https://www.geeksforgeeks.org/machine-learning/monte-carlo-tree-search-mcts-in-machine-learning/
+MCTS: https://www.geeksforgeeks.org/machine-learning/monte-carlo-tree-search-mcts-in-machine-learning/  
+
 ## Original Repo:
 
 #### Curling
