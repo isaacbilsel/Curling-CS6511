@@ -1,7 +1,7 @@
 #### CSCI 6511: AI Algorithms 
 #### Curling Strategy Agent
 
-## Problem
+## Problem and Motivation
 
 The game of curling involves a combination of strategy and technique. Finding an optimal strategy is nontrivial as it requires thinking well in advance and considering all the uncertainty (adversary’s moves and error in technique). Using AI Algorithms to find optimal strategies can assist curling teams in their preparation and training.
 
@@ -30,8 +30,21 @@ State = {
 The action space is the throw parameters: angle, velocity, spin, each of which are real numbers. Each above variable has an uncertainty/throw error e.
 ## Agent
 
-A simple heuristic and random agent have been implemented to understand and test the state/action space descriptions. This is implemented in agent/simpleAgents.py.
+We use a Monte Carlo Tree Search (MCTS) to determine the optimal action based on the game state. See agent/heuristic_biased_MCTS.py. The agent searches over throw parameters `(sqrt_velocity, angle, spin)` and returns a `StoneThrow` for the current player. Each MCTS iteration runs: Selection, Expansion, Rollout, and Backpropagation. Selection uses the standard upper confidence bound tree (UCT) formula:
+$$UCT_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}}$$
+where $\bar{X}_i$ is the average reward/value of child node i, $n_i$ is the number of visits to child node i,
+$N$ is the number of visits to the parent node, and 
+$C$ is the exploration constant. We perform rollout using heuristic opponent actions. 
 
+We utilize two strategies to choose actions during the selection step:
+1. Grid Mode: Randomly sample in a continuous action space with a small number of heuristic near center pitching actions.
+2. No-grid Mode: Discretize the continuous action space into a fixed grid and sample & search within the grid actions.
+
+
+## Testing
+We test our agent agains a random agent, which chooses legal actions uniform randomly, and a heuristic agent, which always throws the stone exactly into the center ring. These agents are implemented in agent/simpleAgents.py. 
+
+## Results
 
 Run to test:
 `python3 -m agent.simpleAgents`
