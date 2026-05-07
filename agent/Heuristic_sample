@@ -1,0 +1,46 @@
+class MCTS_Agent:
+    def __init__(self, config:MCTS_Tree_Config):
+        self.config = config
+        self.grid_actions = self.build_actions_grid()
+        self.random_seed = random.Random(5)
+        
+    def build_actions_grid(self):
+        if self.config.action_per_dimension is None:
+            return None
+
+        limit = StoneThrow.bounds
+        actions = []
+        velocity_dis = np.linspace(limit[0][0], limit[0][1], self.config.action_per_dimension)
+        angle_dis = np.linspace(limit[1][0], limit[1][1], self.config.action_per_dimension)
+        spin_dis = np.linspace(limit[2][0], limit[2][1], self.config.action_per_dimension)
+        for v in velocity_dis:
+            for a in angle_dis:
+                for s in spin_dis:
+                    actions.append((float(v),float(a),float(s)))
+        return actions 
+            
+    def build_no_grid_actions(self):
+        if self.random_seed.random() <= 0.5:
+            "sample round the center"
+            Action = (self.random_seed.gauss(1.41, 0.02),self.random_seed.gauss(0.0, 0.01),self.random_seed.gauss(0.0, 0.04))
+            limit = StoneThrow.bounds
+            return (float(max(limit[0][0], min(limit[0][1], Action[0]))),
+                    float(max(limit[1][0], min(limit[1][1], Action[1]))),
+                    float(max(limit[2][0], min(limit[2][1], Action[2]))))
+        else:
+            limit = StoneThrow.bounds
+            return (self.random_seed.uniform(limit[0][0], limit[0][1]), 
+                    self.random_seed.uniform(limit[1][0], limit[1][1]), 
+                    self.random_seed.uniform(limit[2][0], limit[2][1]))
+
+    "Real Actions in this game"
+    def sample_real_action(self):
+        if self.grid_actions is None:
+            actions = []
+            for i in range(self.config.children_number):
+                actions.append(self.build_no_grid_actions())
+            return actions
+        else:
+            actions = list(self.grid_actions)
+            self.random_seed.shuffle(actions)
+            return actions

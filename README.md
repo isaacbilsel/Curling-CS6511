@@ -47,13 +47,8 @@ $N$ is the number of visits to the parent node, and
 $C$ is the exploration constant. We perform rollout using heuristic opponent actions. 
 
 We utilize two strategies to choose actions during the selection step:
-1. Grid Mode: Randomly sample in a continuous action space with a small number of heuristic near center pitching actions.
-2. No-grid Mode: Discretize the continuous action space into a fixed grid and sample & search within the grid actions.
-
-It should be noted that:
-In the `heuristic_biased_MCTS.py`, the way to find the best child is a little different. When there is no need to expand for a node and thus we are searching for the best child, two situations are considered in the function `choose_the_best_action`
-1. When the next player is the root player, maximize the UCT, that is $$UCT_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}}$$
-2. When the next player is an island, in order to create trouble for the rootplayer, the UCT is minimized, that is $$UCT_i = \bar{X}_i - C \sqrt{\frac{\ln N}{n_i}}$$
+1. Grid Mode: Discretize the continuous action space into a fixed grid and sample & search within the grid actions.
+2. No-grid Mode: Randomly sample in a continuous action space with a small number of heuristic near center pitching actions.
 
 ## Our Solution
 We have applied Monte Carlo Tree Search to choose actions. MCTS is choosen becuase of the large state space and random nature of the environment. Each time the agent takes a turn, it run 50 iterations of the four steps in MCTS algorithms - Selection, Expansion, Rollout, and Backpropagation
