@@ -1,5 +1,5 @@
-#### CSCI 6511: AI Algorithms 
-#### Curling Strategy Agent
+# CSCI 6511: AI Algorithms 
+## Curling Strategy Agent
 
 ## Problem and Motivation
 
@@ -28,6 +28,16 @@ State = {
 ## Action Space
 
 The action space is the throw parameters: angle, velocity, spin, each of which are real numbers. Each above variable has an uncertainty/throw error e.
+
+## State Transitions
+
+A transition happens when a player throws a stone. The throw parameters (velocity, angle, spin) are given to the physics simulator, which moves the stone forward in small time steps until everything stops. During the simulation, stones can collide with each other and get knocked around. Any stone that goes out of bounds is removed. The result is a new set of stone positions which is the next state.
+
+This is implemented in `src/curling.py` (`throw()` and `step()`) and `src/stone.py`. The game is fully observable — both players can always see all stone positions on the sheet.
+
+## Observation
+The state space is fully observable. The agent can see or have information about the complete board, stones and their positions before start of every turn.
+
 ## Agent
 
 We use a Monte Carlo Tree Search (MCTS) to determine the optimal action based on the game state. See agent/heuristic_biased_MCTS.py. The agent searches over throw parameters `(sqrt_velocity, angle, spin)` and returns a `StoneThrow` for the current player. Each MCTS iteration runs: Selection, Expansion, Rollout, and Backpropagation. Selection uses the standard upper confidence bound tree (UCT) formula:
@@ -45,13 +55,77 @@ In the `heuristic_biased_MCTS.py`, the way to find the best child is a little di
 1. When the next player is the root player, maximize the UCT, that is $$UCT_i = \bar{X}_i + C \sqrt{\frac{\ln N}{n_i}}$$
 2. When the next player is an island, in order to create trouble for the rootplayer, the UCT is minimized, that is $$UCT_i = \bar{X}_i - C \sqrt{\frac{\ln N}{n_i}}$$
 
-## Testing
-We test our agent agains a random agent, which chooses legal actions uniform randomly, and a heuristic agent, which always throws the stone exactly into the center ring. These agents are implemented in agent/simpleAgents.py. 
+## Our Solution
+We have applied Monte Carlo Tree Search to choose actions. MCTS is choosen becuase of the large state space and random nature of the environment. Each time the agent takes a turn, it run 50 iterations of the four steps in MCTS algorithms - Selection, Expansion, Rollout, and Backpropagation
+
+Our agent is implemented in `agent/mctsHeuristicRollout.py`. It plays as RED and uses Monte Carlo Tree Search (MCTS) to decide what throw to make each turn.
+
+The idea: Starting from the root node, the algorithm tries to find an untried action with best UCB. Once the untried action is selected from the available combinations, the simulator executes the throw and the resulting state is represented as child node. From this child node, the rest of the game is simulated randomly to completion. The MCTS agent will pick from its discretized action space, while the opponent picks from the random distribution. The simulated result is backpropagated back throught the tree. 
+
+### What the agent does each turn
+
+1. It samples 20 possible throws to try. The throws consists of, draw shots aimed near the center (50%), knockout shots at higher velocity to knock out opponent stones (25%), and the rest are random to keep things exploratory.
+
+2. For each candidate throw, it builds the search tree. It tries throws, evaluates the throw, and branches from there.
+
+3. The search tree simulates for 4 turns ahead instead of entire game (sweet spot for accuracy and speed) based on our defined heuristics.
+
+4. The score from that simulation gets sent back up the tree so good throws get visited more often.
+
+5. After 50 iterations of this process, it picks the throw that was visited the most which is the one the search found most consistently good.
+
+### Heuristic
+
+The heuristic is used during rollout to simulate how both players would play. Instead of throwing randomly, each simulated throw follows these three rules based on the current board state:
+
+1. **House is empty** — throw straight toward the center of the house with no spin. 
+
+2. **Opponent's stone is closest to the button** — throw a knockout shot at higher velocity aimed slightly at the opponent's stone. The angle is adjusted left or right depending on which side of the sheet their stone is on.
+
+3. **Our stone is closest to the button** — throw a guard shot at lower velocity with a small angle and spin to curl in front of our stone.
+
+These three cases cover the most common situations in curling. The heuristic is not perfect but gives the rollout enough realism to produce useful signal for the MCTS search.
+
+### How to run
+
+```
+python3 -m agent.mctsHeuristicRollout
+```
+
+To run the full experiment (50 games vs random, 50 games vs heuristic):
+
+```
+python3 -m agent.run_experiments
+```
 
 ## Results
 
-Run to test:
-`python3 -m agent.simpleAgents`
+We ran 50 games against each opponent. Our agent plays as RED.
+
+| Opponent | RED (our MCTS) | YELLOW (opponent) | Draws |
+|---|---|---|---|
+| Random agent | 44/50 (88%) | 6/50 | 0 |
+| Heuristic agent | 41/50 (82%) | 9/50 | 0 |
+
+The agent beats the random opponent 88% of the time and the heuristic opponent 82% of the time. The heuristic opponent is harder to beat because it also plays smart reactive shots, but MCTS still wins most games because it looks 4 turns ahead while the heuristic only reacts to the current board.
+
+## Related Works
+a. The below repo is our source for a curling physics simulator. The author used this simulator to create a MCST + NN agent called betacurl but it was unfinished/unsuccessful. (https://github.com/George-Ogden/curling)  
+b. The below competition involves a curling simulator with a PPO agent implementation, however the problem formulation is not representative of real curling. (https://github.com/jidiai/Competition_Olympics-Curling/tree/main)  
+c. The below paper outlines a methodology for modeling curling as a markov process. (https://edwards.usask.ca/faculty/Keith%20Willoughby/files/EJOR%202001.pdf)  
+d. The below ICML paper from 2018 uses a deep CNN and a monte-carlo search tree based on a C++ physics simulator. (https://proceedings.mlr.press/v80/lee18b/lee18b.pdf)  
+e. The below work (2025) uses an actor-critic algorithm to assess curling strategy. (https://www.research-collection.ethz.ch/server/api/core/bitstreams/59f77456-9ead-4381-a745-936402e7bdc7/content)  
+
+#### Software and Hardware requirements
+
+- Python 3.10 or higher
+- Install dependencies with:
+```
+pip install -r requirements.txt
+```
+
+#### References used:
+Simulator: https://github.com/George-Ogden/curling
 
 ## Original Repo:
 
