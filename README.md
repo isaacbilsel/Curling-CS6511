@@ -1,5 +1,5 @@
-#### CSCI 6511: AI Algorithms 
-#### Curling Strategy Agent
+# CSCI 6511: AI Algorithms 
+## Curling Strategy Agent
 
 ## Problem and Motivation
 
