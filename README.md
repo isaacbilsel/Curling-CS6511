@@ -29,6 +29,12 @@ State = {
 
 The action space is the throw parameters: angle, velocity, spin, each of which are real numbers. Each above variable has an uncertainty/throw error e.
 
+## Transitions
+The transitions are determined by the physics simulator. It includes trajectory, curl, and collisions.
+
+## Observation
+The state space is fully observable. The agent can see or have information about the complete board, stones and their positions before start of every turn.
+
 ## Agent
 
 We use a Monte Carlo Tree Search (MCTS) to determine the optimal action based on the game state. See agent/heuristic_biased_MCTS.py. The agent searches over throw parameters `(sqrt_velocity, angle, spin)` and returns a `StoneThrow` for the current player. Each MCTS iteration runs: Selection, Expansion, Rollout, and Backpropagation. Selection uses the standard upper confidence bound tree (UCT) formula:
@@ -43,10 +49,11 @@ We utilize two strategies to choose actions during the selection step:
 
 
 ## Our Solution
+We have applied Monte Carlo Tree Search to choose actions. MCTS is choosen becuase of the large state space and random nature of the environment. Each time the agent takes a turn, it run 50 iterations of the four steps in MCTS algorithms - Selection, Expansion, Rollout, and Backpropagation
 
 Our agent is implemented in `agent/mctsHeuristicRollout.py`. It plays as RED and uses Monte Carlo Tree Search (MCTS) to decide what throw to make each turn.
 
-The idea: before throwing, the agent simulates many possible futures and picks the throw that tends to lead to the best outcome.
+The idea: Starting from the root node, the algorithm tries to find an untried action with best UCB. Once the untried action is selected from the available combinations, the simulator executes the throw and the resulting state is represented as child node. From this child node, the rest of the game is simulated randomly to completion. The MCTS agent will pick from its discretized action space, while the opponent picks from the random distribution. The simulated result is backpropagated back throught the tree. 
 
 ### What the agent does each turn
 
@@ -94,6 +101,21 @@ We ran 50 games against each opponent. Our agent plays as RED.
 | Heuristic agent | 41/50 (82%) | 9/50 | 0 |
 
 The agent beats the random opponent 88% of the time and the heuristic opponent 82% of the time. The heuristic opponent is harder to beat because it also plays smart reactive shots, but MCTS still wins most games because it looks 4 turns ahead while the heuristic only reacts to the current board.
+
+## Related Works
+a. The below repo is our source for a curling physics simulator. The author used this simulator to create a MCST + NN agent called betacurl but it was unfinished/unsuccessful. (https://github.com/George-Ogden/curling)  
+b. The below competition involves a curling simulator with a PPO agent implementation, however the problem formulation is not representative of real curling. (https://github.com/jidiai/Competition_Olympics-Curling/tree/main)  
+c. The below paper outlines a methodology for modeling curling as a markov process. (https://edwards.usask.ca/faculty/Keith%20Willoughby/files/EJOR%202001.pdf)  
+d. The below ICML paper from 2018 uses a deep CNN and a monte-carlo search tree based on a C++ physics simulator. (https://proceedings.mlr.press/v80/lee18b/lee18b.pdf)  
+e. The below work (2025) uses an actor-critic algorithm to assess curling strategy. (https://www.research-collection.ethz.ch/server/api/core/bitstreams/59f77456-9ead-4381-a745-936402e7bdc7/content)  
+
+#### Software and Hardware requirements
+- Python3
+- numpy, pandas, opencv
+- Any standard laptop is enough
+
+#### References used:
+Simulator: https://github.com/George-Ogden/curling
 
 ## Original Repo:
 
