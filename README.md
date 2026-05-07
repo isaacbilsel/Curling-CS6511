@@ -33,7 +33,7 @@ The action space is the throw parameters: angle, velocity, spin, each of which a
 
 A transition happens when a player throws a stone. The throw parameters (velocity, angle, spin) are given to the physics simulator, which moves the stone forward in small time steps until everything stops. During the simulation, stones can collide with each other and get knocked around. Any stone that goes out of bounds is removed. The result is a new set of stone positions which is the next state.
 
-This is implemented in `src/curling.py` (`throw()` and `step()`) and `src/stone.py`. The game is fully observable — both players can always see all stone positions on the sheet.
+This is implemented in `src/curling.py` (`throw()` and `step()`) and `src/stone.py`.
 
 ## Observation
 The state space is fully observable. The agent can see or have information about the complete board, stones and their positions before start of every turn.
@@ -74,11 +74,11 @@ The idea: Starting from the root node, the algorithm tries to find an untried ac
 
 The heuristic is used during rollout to simulate how both players would play. Instead of throwing randomly, each simulated throw follows these three rules based on the current board state:
 
-1. **House is empty** — throw straight toward the center of the house with no spin. 
+1. **House is empty**: throw straight toward the center of the house with no spin. 
 
-2. **Opponent's stone is closest to the button** — throw a knockout shot at higher velocity aimed slightly at the opponent's stone. The angle is adjusted left or right depending on which side of the sheet their stone is on.
+2. **Opponent's stone is closest to the button**: throw a knockout shot at higher velocity aimed slightly at the opponent's stone. The angle is adjusted left or right depending on which side of the sheet their stone is on.
 
-3. **Our stone is closest to the button** — throw a guard shot at lower velocity with a small angle and spin to curl in front of our stone.
+3. **Our stone is closest to the button**: throw a guard shot at lower velocity with a small angle and spin to curl in front of our stone.
 
 These three cases cover the most common situations in curling. The heuristic is not perfect but gives the rollout enough realism to produce useful signal for the MCTS search.
 
@@ -122,15 +122,15 @@ pip install -r requirements.txt
 
 #### References used:
 Simulator: https://github.com/George-Ogden/curling
-
+MCTS: https://www.geeksforgeeks.org/machine-learning/monte-carlo-tree-search-mcts-in-machine-learning/
 ## Original Repo:
 
-# Curling
+#### Curling
 Simulated curling environment  
 ![Rendered Curling Environment](docs/images/environment.png)  
 Physics based on [Dynamics and curl ratio of a curling stone](https://rdcu.be/dgIW2)  
 Used in [https://github.com/George-Ogden/betacurl](https://github.com/George-Ogden/betacurl)
-## Install
+### Install
 With pip
 ```sh
 pip install git+https://github.com/George-Ogden/curling.git
@@ -140,7 +140,7 @@ from source
 git clone https://github.com/George-Ogden/curling
 pip install .
 ```
-## Usage
+### Usage
 ```python
 from curling import Curling, SimulationConstants, StoneColor, StoneThrow
 import numpy as np
@@ -169,5 +169,5 @@ for i in range(curling.num_stones_per_end):
 
 print(curling.evaluate_position()) # positive for YELLOW and negative for RED
 ```
-## Documentation
+### Documentation
 For more information, see the documentation at [https://curling.readthedocs.io/](https://curling.readthedocs.io/)
