@@ -51,7 +51,7 @@ We test our agent agains a random agent, which chooses legal actions uniform ran
 ## Results
 
 Run to test:
-`python3 -m agent.simpleAgents`
+`python3 -m agent.heuristic_biased_MCTS`
 
 ## Original Repo:
 
