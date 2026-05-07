@@ -29,8 +29,11 @@ State = {
 
 The action space is the throw parameters: angle, velocity, spin, each of which are real numbers. Each above variable has an uncertainty/throw error e.
 
-## Transitions
-The transitions are determined by the physics simulator. It includes trajectory, curl, and collisions.
+## State Transitions
+
+A transition happens when a player throws a stone. The throw parameters (velocity, angle, spin) are given to the physics simulator, which moves the stone forward in small time steps until everything stops. During the simulation, stones can collide with each other and get knocked around. Any stone that goes out of bounds is removed. The result is a new set of stone positions which is the next state.
+
+This is implemented in `src/curling.py` (`throw()` and `step()`) and `src/stone.py`. The game is fully observable — both players can always see all stone positions on the sheet.
 
 ## Observation
 The state space is fully observable. The agent can see or have information about the complete board, stones and their positions before start of every turn.
